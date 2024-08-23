@@ -44,7 +44,7 @@ body {
     font-family: sans-serif;
     display: block;
     /* background */
-    background-image: linear-gradient(to bottom, rgba(37, 37, 37, 0.65) 0%, rgba(37, 37, 37, 0.65) 100%), url(https://bing.img.run/rand.php); /* The image used for background*/
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.55) 100%), url(https://bing.img.run/rand.php); /* The image used for background*/
     background-repeat: no-repeat; /* Do not repeat the image */
     background-position: center; /* Center the image */
     background-attachment: fixed;
@@ -80,6 +80,7 @@ a:hover {
     background-color: #fcdcff3f;
     padding: 30px;
     backdrop-filter: blur(5px);
+    border-radius: 13px;
 }
 
 .info {
@@ -139,10 +140,9 @@ a:hover {
 .link {
     position: relative;
     margin-top: 30px;
-    margin-left: 20px;
+    margin-left: 0px;
     text-align: center;
     padding: 20px;
-    padding-left: 0px;
     display: block;
     font-size: 0.8em;
 }
