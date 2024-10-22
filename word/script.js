@@ -7,7 +7,7 @@ $(document).ready(function() {
         // 生成表格內容和快速索引
         words.forEach((word, index) => {
             const yearArray = JSON.parse(word.年分.replace(/'/g, '"'));
-            const truncatedYears = yearArray.length > 10 ? yearArray.slice(0, 10).join(', ') + '...' : yearArray.join(', ');
+            const truncatedYears = yearArray.length > 6 ? yearArray.slice(0, 6).join(', ') + '...' : yearArray.join(', ');
 
             const row = `
                 <tr id="index-${index}">
@@ -18,7 +18,7 @@ $(document).ready(function() {
                     <td>${word.中文}</td>
                     <td class="year-display">
                         <span>${truncatedYears}</span>
-                        <button class="btn btn-link btn-sm toggle-years float-end" data-full="${yearArray.join(', ')}">顯示完整</button>
+                        <button class="btn btn-outline-light btn-sm toggle-years float-end" data-full="${yearArray.join(', ')}">顯示完整</button>
                     </td>
                 </tr>
             `;
@@ -40,7 +40,7 @@ $(document).ready(function() {
             const yearDisplay = $(this).siblings('span');
 
             if (yearDisplay.text() === fullYears) {
-                yearDisplay.text(fullYears.slice(0, 10) + '...');
+                yearDisplay.text(fullYears.slice(0, 30) + '...');
                 $(this).text('顯示完整');
             } else {
                 yearDisplay.text(fullYears);
@@ -100,4 +100,25 @@ toggleChineseBtn.addEventListener('click', function() {
     toggleChineseBtn.textContent = isChineseBlurred ? '顯示中文' : '隱藏中文';
 });
 
+// 取得搜尋表單和輸入框
+const searchForm = document.getElementById('search-form');
+const searchInput = document.getElementById('search-input');
+
+// 監聽搜尋表單的提交事件
+searchForm.addEventListener('submit', function(event) {
+    event.preventDefault(); // 防止表單提交後頁面重新整理
+
+    const searchTerm = searchInput.value.toLowerCase(); // 取得輸入的搜尋關鍵字並轉為小寫
+    const wordRows = document.querySelectorAll('#word-table tbody tr'); // 選取所有的單字行
+
+    // 逐一檢查每一行是否包含搜尋關鍵字
+    wordRows.forEach(row => {
+        const word = row.querySelector('td:nth-child(2)').textContent.toLowerCase(); // 取得每行的單字欄位
+        if (word.includes(searchTerm)) {
+            row.style.display = ''; // 若符合搜尋條件則顯示
+        } else {
+            row.style.display = 'none'; // 若不符合搜尋條件則隱藏
+        }
+    });
+});
 
