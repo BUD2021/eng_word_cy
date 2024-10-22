@@ -70,10 +70,17 @@ $(document).ready(function() {
         isChineseBlurred = !isChineseBlurred;
         const chineseCells = document.querySelectorAll('#word-table td:nth-child(3)');
         chineseCells.forEach(cell => {
-            cell.style.filter = isChineseBlurred ? 'blur(5px)' : 'none';
+            if (isChineseBlurred) {
+                cell.style.filter = 'blur(4px)';
+                cell.style.transform = 'translateZ(0)';  // 啟用硬體加速
+            } else {
+                cell.style.filter = 'none';
+                cell.style.transform = 'none';  // 恢復原狀
+            }
         });
         toggleChineseBtn.textContent = isChineseBlurred ? '顯示中文' : '隱藏中文';
     });
+
 
     // 搜尋功能
     const searchForm = document.getElementById('search-form');

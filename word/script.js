@@ -90,9 +90,11 @@ toggleChineseBtn.addEventListener('click', function() {
     // 根據狀態加上或移除模糊效果
     chineseCells.forEach(cell => {
         if (isChineseBlurred) {
-            cell.style.filter = 'blur(5px)';  // 套用 5px 的模糊效果
+            cell.style.filter = 'blur(4px)'; 
+            cell.style.transform = 'translateZ(0)';  
         } else {
             cell.style.filter = 'none';  // 移除模糊效果
+            cell.style.transform = 'none';
         }
     });
 
