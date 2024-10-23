@@ -1,51 +1,65 @@
 $(document).ready(function() {
     const tableBody = $('#word-table-body');
     const indexList = $('#index-list');
+    let allWords = []; // 儲存所有單字
+
+    // 載入所有級別的單字
+    function loadAllWords() {
+        $.getJSON('word.json', function(data) {
+            for (const [key, words] of Object.entries(data)) {
+                words.forEach(word => {
+                    if (word.單字 && word.中文) {
+                        allWords.push({ ...word, level: key }); // 為每個單字添加級數
+                    }
+                });
+            }
+            loadLevel('1級'); // 預設載入1級
+        });
+    }
 
     // 載入指定級別的單字
     function loadLevel(level) {
-        $.getJSON('word.json', function(data) {
-            const words = data[level];
-            tableBody.empty(); // 清空表格
-            indexList.empty(); // 清空快速索引
+        console.log(`Loading level: ${level}`); // 調試輸出
+        tableBody.empty(); // 清空表格
+        indexList.empty(); // 清空快速索引
 
-            words.forEach((word, index) => {
-                const rowId = `index-${index}`; // 唯一ID
-                const row = `
-                    <tr id="${rowId}">
-                        <td>${index + 1}</td>
-                        <td class="eng">${word.單字}</td>
-                        <td>${word.中文}</td>
-                    </tr>
-                `;
-                tableBody.append(row);
+        // 過濾當前級別的單字
+        const filteredWords = allWords.filter(word => word.level === level);
+        console.log(`Filtered words:`, filteredWords); // 調試輸出
 
-                // 添加快速索引，每 50 個單字為一個索引
-                if (index % 50 === 0) {
-                    const indexLink = `
-                        <li><a class="dropdown-item" href="#${rowId}">
-                            序列${index + 1}
-                        </a></li>`;
-                    indexList.append(indexLink);
-                }
-            });
+        filteredWords.forEach((word, index) => {
+            const rowId = `row-${index}`; // 唯一ID
+            const row = 
+                `<tr id="${rowId}">
+                    <td>${index + 1}</td>
+                    <td class="eng">${word.單字}</td>
+                    <td>${word.中文}</td>
+                    <td>${word.level}</td> <!-- 新增級數欄位 -->
+                </tr>`;
+            tableBody.append(row);
 
-            // 重置搜尋功能
-            searchInput.value = '';
-            searchRows();
+            // 添加快速索引，每 50 個單字為一個索引
+            if (index % 50 === 0) {
+                const indexLink = 
+                    `<li><a class="dropdown-item" href="#${rowId}">
+                        序列${index + 1}
+                    </a></li>`;
+                indexList.append(indexLink);
+            }
         });
     }
 
     // 綁定按鈕事件
-    $('#level1Btn').click(() => loadLevel('1級'));
-    $('#level2Btn').click(() => loadLevel('2級'));
-    $('#level3Btn').click(() => loadLevel('3級'));
-    $('#level4Btn').click(() => loadLevel('4級'));
-    $('#level5Btn').click(() => loadLevel('5級'));
-    $('#level6Btn').click(() => loadLevel('6級'));
+    $('#level1Btn').click(() => { searchInput.setAttribute('data-current-level', '1級'); loadLevel('1級'); });
+    $('#level2Btn').click(() => { searchInput.setAttribute('data-current-level', '2級'); loadLevel('2級'); });
+    $('#level3Btn').click(() => { searchInput.setAttribute('data-current-level', '3級'); loadLevel('3級'); });
+    $('#level4Btn').click(() => { searchInput.setAttribute('data-current-level', '4級'); loadLevel('4級'); });
+    $('#level5Btn').click(() => { searchInput.setAttribute('data-current-level', '5級'); loadLevel('5級'); });
+    $('#level6Btn').click(() => { searchInput.setAttribute('data-current-level', '6級'); loadLevel('6級'); });
 
-    // 預設載入 1級
-    loadLevel('1級');
+
+    // 載入所有單字
+    loadAllWords();
 
     // 顯示返回頂端按鈕
     $(window).scroll(function() {
@@ -70,17 +84,10 @@ $(document).ready(function() {
         isChineseBlurred = !isChineseBlurred;
         const chineseCells = document.querySelectorAll('#word-table td:nth-child(3)');
         chineseCells.forEach(cell => {
-            if (isChineseBlurred) {
-                cell.style.filter = 'blur(4px)';
-                cell.style.transform = 'translateZ(0)';  // 啟用硬體加速
-            } else {
-                cell.style.filter = 'none';
-                cell.style.transform = 'none';  // 恢復原狀
-            }
+            cell.style.filter = isChineseBlurred ? 'blur(4px)' : 'none';
         });
         toggleChineseBtn.textContent = isChineseBlurred ? '顯示中文' : '隱藏中文';
     });
-
 
     // 搜尋功能
     const searchForm = document.getElementById('search-form');
@@ -88,17 +95,34 @@ $(document).ready(function() {
 
     function searchRows() {
         const searchTerm = searchInput.value.toLowerCase();
-        const wordRows = document.querySelectorAll('#word-table tbody tr');
-
-        wordRows.forEach(row => {
-            const word = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-            if (word.includes(searchTerm)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+        tableBody.empty(); // 清空表格以顯示搜尋結果
+    
+        if (searchTerm.trim() === '') {
+            // 如果搜尋字串是空的，重新載入當前級別的單字
+            const currentLevel = searchInput.getAttribute('data-current-level') || '1級';
+            loadLevel(currentLevel);
+            return;
+        }
+    
+        const filteredWords = allWords.filter(word => {
+            const englishWord = typeof word.單字 === 'string' ? word.單字.toLowerCase() : '';
+            const chineseWord = typeof word.中文 === 'string' ? word.中文.toLowerCase() : '';
+            return englishWord.includes(searchTerm) || chineseWord.includes(searchTerm);
+        });
+    
+        filteredWords.forEach((word, index) => {
+            const rowId = `row-${index}`; // 唯一ID
+            const row = 
+                `<tr id="${rowId}">
+                    <td>${index + 1}</td>
+                    <td class="eng">${word.單字}</td>
+                    <td>${word.中文}</td>
+                    <td>${word.level}</td> <!-- 新增級數欄位 -->
+                </tr>`;
+            tableBody.append(row);
         });
     }
+    
 
     searchForm.addEventListener('submit', function(event) {
         event.preventDefault();
